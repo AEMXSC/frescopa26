@@ -64,3 +64,12 @@ You can also use the explorer: https://sc-api.adobeaem.workers.dev/explorer/
 - If you change the schema, existing records are not migrated. Deleting a schema stops its records from opening.
 - Record pages take `<title>` from the `da-form` heading. For SEO titles, add a Metadata block or a bulk `/metadata` sheet.
 - Adobe says the API hosts may change. The host lives in one constant, `SC_API`, in `roast-list.js`.
+
+## Channel Preview (author experience)
+
+Opening a roast in DA opens **Channel Preview** ([tools/kiosk-studio](../tools/kiosk-studio/)). It shows the form on the left and a live channel preview on the right: the kiosk (https://frescopa-kiosk.vercel.app), the website, or a phone, each in its own device frame.
+
+- Edit in the form, then click the form's **Send**. Within about 4 seconds the channel refreshes by itself, and the record is reindexed so new roasts appear in the kiosk menu straight away.
+- Use **Preview / Published** to compare the draft with what's live.
+- Channels come from the `previews` sheet in the site config (`https://da.live/config#/aemxsc/frescopa26/`), with one row per channel: `schema | label | url | device`. URL tokens are `{tier}`, `{tld}` (page|live), `{path}`, `{slug}`, `{org}` and `{site}`. Devices are `kiosk`, `desktop` and `phone`. If the sheet is missing, the app falls back to built-in defaults.
+- `editor.path` in the org config maps `/aemxsc/frescopa26/roasts` to `https://da.live/app/aemxsc/frescopa26/tools/kiosk-studio/kiosk-studio#`.

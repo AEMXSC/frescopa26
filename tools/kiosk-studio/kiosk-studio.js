@@ -27,7 +27,7 @@ const DEVICES = {
   phone: { w: 390, h: 844 },
 };
 const KIOSK = 'https://frescopa-kiosk.vercel.app';
-const WEB = 'https://structured-content-example--{site}--{org}.aem.{tld}';
+const WEB = 'https://main--{site}--{org}.aem.{tld}';
 const DEFAULT_CHANNELS = [
   {
     schema: 'roast', label: 'Kiosk · roast', url: `${KIOSK}/?tier={tier}&product={path}`, device: 'kiosk',
