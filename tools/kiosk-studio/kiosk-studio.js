@@ -199,8 +199,33 @@ function wire() {
   new ResizeObserver(fitDevice).observe($('device-wrap'));
 }
 
+/* ---- Host the form app ourselves (no second DA shell / header) ----
+ * DA apps receive { ready, token, context } plus a MessagePort from their host.
+ * We play that host for the embedded form, relaying our own SDK payload with
+ * the document path. Child messages (title, hash) are ignored. The child
+ * ignores repeat inits, so we retry a few times to beat its listener setup.
+ * ?form=shell falls back to embedding the full da.live page. */
+const FORM_DIRECT = 'https://main--sc-editor--aemsites.aem.live/form.html#';
+const FORM_ORIGIN = new URL(FORM_DIRECT).origin;
+
+function hostForm(frame, payload) {
+  const init = () => {
+    const { port1, port2 } = new MessageChannel();
+    port1.start();
+    frame.contentWindow?.postMessage({ ...payload, ready: true }, FORM_ORIGIN, [port2]);
+  };
+  frame.addEventListener('load', () => [0, 300, 1000, 2500].forEach((ms) => setTimeout(init, ms)));
+  // Forward IMS token refreshes from DA to the form.
+  window.addEventListener('message', (e) => {
+    if (e.source === window.parent && e.data?.token) {
+      frame.contentWindow?.postMessage({ token: e.data.token }, FORM_ORIGIN);
+    }
+  });
+}
+
 (async function init() {
-  const { context, token } = await DA_SDK;
+  const sdk = await DA_SDK;
+  const { context, token } = sdk;
   const doc = resolveDoc(context);
   ctx = { doc, token };
   $('doc-path').textContent = `/${doc.org}/${doc.site}${doc.path}`;
@@ -209,7 +234,15 @@ function wire() {
     setStatus('Open this app from a structured content document.', 'err');
     return;
   }
-  $('form-frame').src = `${FORM_APP}/${doc.org}/${doc.site}${doc.path}`;
+  const fullPath = `/${doc.org}/${doc.site}${doc.path}`;
+  const frame = $('form-frame');
+  if (new URLSearchParams(window.location.search).get('form') === 'shell') {
+    frame.src = `${FORM_APP}${fullPath}`;
+  } else {
+    const { actions, ...payload } = sdk;
+    hostForm(frame, { ...payload, context: { ...context, path: fullPath } });
+    frame.src = `${FORM_DIRECT}${fullPath}`;
+  }
   const schema = await detectSchema(doc, token);
   channels = await loadChannels(doc, token, schema);
   $('channel').replaceChildren(...channels.map((c) => Object.assign(document.createElement('option'), { textContent: c.label })));
