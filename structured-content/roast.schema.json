@@ -1,0 +1,77 @@
+{
+  "title": "Roast",
+  "description": "A Fréscopa single-origin or blend coffee, sold as a bag.",
+  "type": "object",
+  "required": [
+    "name",
+    "roastLevel",
+    "price"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Name",
+      "minLength": 2,
+      "maxLength": 60
+    },
+    "origin": {
+      "type": "string",
+      "title": "Origin",
+      "maxLength": 80
+    },
+    "roastLevel": {
+      "type": "string",
+      "title": "Roast level",
+      "enum": [
+        "Light",
+        "Medium",
+        "Dark"
+      ]
+    },
+    "tastingNotes": {
+      "type": "array",
+      "title": "Tasting notes",
+      "maxItems": 4,
+      "items": {
+        "type": "string",
+        "title": "Note"
+      }
+    },
+    "description": {
+      "type": "string",
+      "title": "Description",
+      "maxLength": 400
+    },
+    "image": {
+      "type": "string",
+      "title": "Image URL",
+      "description": "Publish the image in DA, then paste its aem.live URL.",
+      "pattern": "^https://"
+    },
+    "imageAlt": {
+      "type": "string",
+      "title": "Image alt text",
+      "maxLength": 160
+    },
+    "price": {
+      "type": "number",
+      "title": "Price (USD)",
+      "minimum": 0
+    },
+    "bagSize": {
+      "type": "string",
+      "title": "Bag size",
+      "enum": [
+        "250g",
+        "500g",
+        "1kg"
+      ],
+      "default": "250g"
+    },
+    "featured": {
+      "type": "boolean",
+      "title": "Featured",
+      "default": false
+    }
+  }
+}

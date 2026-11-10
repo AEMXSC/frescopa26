@@ -1,0 +1,114 @@
+/* Block: roast-list
+ * Card grid of "roast" structured content records from the SC API index.
+ */
+
+.roast-list .roast-list-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+.roast-list .roast-list-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background-color: var(--paper);
+  color: var(--text-color);
+  text-decoration: none;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.roast-list .roast-list-card:hover,
+.roast-list .roast-list-card:focus-visible {
+  border-color: var(--terracotta);
+}
+
+.roast-list .roast-list-media {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  background: linear-gradient(135deg, var(--paper-2), var(--paper-3));
+}
+
+.roast-list .roast-level-light { background: linear-gradient(135deg, var(--paper-2), var(--amber-soft)); }
+.roast-list .roast-level-dark { background: linear-gradient(135deg, var(--paper-3), var(--burgundy)); }
+
+.roast-list .roast-list-level {
+  font-family: var(--font-display);
+  font-size: var(--fs-h4);
+  font-weight: 700;
+}
+
+.roast-list .roast-level-dark .roast-list-level { color: var(--paper); }
+
+.roast-list .roast-badge {
+  position: absolute;
+  top: 0.9rem;
+  left: 0.9rem;
+  padding: 0.3em 0.7em;
+  border-radius: var(--r-pill);
+  background-color: var(--amber-soft);
+  color: var(--terracotta-deep);
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.roast-list .roast-list-body { padding: 1.25rem 1.5rem 1.5rem; }
+
+.roast-list .roast-origin {
+  margin: 0;
+  font-size: var(--body-font-size-xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--terracotta-deep);
+}
+
+.roast-list .roast-list-name { margin: 0.4rem 0 0; }
+
+.roast-list .roast-notes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.75rem 0;
+  padding: 0;
+  list-style: none;
+}
+
+.roast-list .roast-notes li {
+  padding: 0.25em 0.75em;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  font-size: var(--body-font-size-xs);
+}
+
+.roast-list .roast-list-price {
+  margin: 0;
+  font-weight: 700;
+
+}
+
+.roast-list .roast-list-message {
+  text-align: center;
+  opacity: 0.7;
+}
+
+@media (width >= 600px) {
+  .roast-list .roast-list-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (width >= 900px) {
+  .roast-list .roast-list-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+.roast-list .roast-list-media picture,
+.roast-list .roast-list-media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

@@ -1,0 +1,22 @@
+{
+  "metadata": {
+    "schemaName": "roast",
+    "title": "Atelier Decaf"
+  },
+  "data": {
+    "name": "Atelier Decaf",
+    "origin": "Huila, Colombia (sugarcane process)",
+    "roastLevel": "Medium",
+    "tastingNotes": [
+      "Brown sugar",
+      "Hazelnut",
+      "Orange"
+    ],
+    "description": "Naturally decaffeinated with sugarcane ethyl acetate, so the sweetness stays.",
+    "image": "https://main--frescopa26--aemxsc.aem.live/media/media_157d76f9a17674cec126478dc91f7b86a9b11844f.jpg",
+    "imageAlt": "A sunlit Fréscopa café with guests at long wooden tables",
+    "price": 18,
+    "bagSize": "250g",
+    "featured": false
+  }
+}

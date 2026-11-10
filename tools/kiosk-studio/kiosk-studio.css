@@ -1,0 +1,227 @@
+/* Channel Preview: DA app chrome, styled to sit quietly inside da.live. */
+:root {
+  --bg: #f8f8f8;
+  --panel: #fff;
+  --ink: #222;
+  --muted: #6e6e6e;
+  --line: #e1e1e1;
+  --accent: #3b63fb;
+  --ok: #12805c;
+  --err: #d31510;
+  --device-bg: #2c2c2c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--ink);
+  font: 14px/1.4 "Adobe Clean", system-ui, sans-serif;
+}
+
+button,
+select,
+input {
+  font: inherit;
+}
+
+.studio-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+  padding: 12px 20px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+}
+
+.doc {
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+}
+
+.doc-label,
+.field > span:first-child {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.doc-path {
+  font-size: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.urls {
+  display: flex;
+  flex: 1;
+  gap: 16px;
+  min-width: 320px;
+}
+
+.url {
+  flex: 1;
+  min-width: 0;
+}
+
+.url-row {
+  display: flex;
+  gap: 4px;
+}
+
+select,
+input {
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+}
+
+input {
+  flex: 1;
+  min-width: 0;
+  color: var(--muted);
+}
+
+.icon,
+.ghost {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--ink);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.primary {
+  height: 32px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.primary:disabled {
+  opacity: 0.5;
+}
+
+.studio {
+  display: grid;
+  flex: 1;
+  grid-template-columns: minmax(420px, 1fr) minmax(360px, 1fr);
+  min-height: 0;
+}
+
+.pane {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.form-pane {
+  border-right: 1px solid var(--line);
+}
+
+.form-pane iframe {
+  flex: 1;
+  width: 100%;
+  border: 0;
+  background: var(--panel);
+}
+
+.preview-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.tier {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.tier button {
+  padding: 4px 12px;
+  border: 0;
+  background: var(--panel);
+  cursor: pointer;
+}
+
+.tier button.on {
+  background: var(--ink);
+  color: #fff;
+}
+
+.status {
+  flex: 1;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.status.ok {
+  color: var(--ok);
+}
+
+.status.err {
+  color: var(--err);
+}
+
+.device-wrap {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  background: repeating-conic-gradient(#eee 0% 25%, #f6f6f6 0% 50%) 0 0 / 24px 24px;
+}
+
+.device {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  border: 16px solid var(--device-bg);
+  border-radius: 28px;
+  background: #000;
+  box-shadow: 0 20px 50px rgb(0 0 0 / 25%);
+  transform-origin: top center;
+  translate: -50% 0;
+  overflow: hidden;
+}
+
+.device[data-device="desktop"] {
+  border-width: 10px;
+  border-radius: 10px;
+}
+
+.device iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #fff;
+}
