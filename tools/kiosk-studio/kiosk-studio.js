@@ -127,14 +127,9 @@ function fitDevice() {
 function render() {
   const ch = channels[$('channel').selectedIndex];
   if (!ch) return;
-  const previewUrl = fill(ch.url, ctx.doc, 'preview');
-  const liveUrl = fill(ch.url, ctx.doc, 'live');
-  $('preview-url').value = previewUrl;
-  $('live-url').value = liveUrl;
-  $('preview-open').href = previewUrl;
-  $('live-open').href = liveUrl;
-  const src = tier === 'live' ? liveUrl : previewUrl;
-  // Cache-bust so a reload after "Send to preview" never shows a stale page.
+  const src = fill(ch.url, ctx.doc, tier);
+  $('open').href = src;
+  // Cache-bust so a refresh after Send never shows a stale page.
   const url = new URL(src);
   url.searchParams.set('studio', Date.now().toString(36));
   $('preview-frame').src = url.href;
@@ -188,14 +183,6 @@ function wire() {
     document.querySelectorAll('[data-tier]').forEach((x) => x.classList.toggle('on', x === b));
     render();
   }));
-  document.querySelectorAll('[data-copy]').forEach((b) => b.addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText($(b.dataset.copy).value);
-      setStatus('Copied', 'ok');
-    } catch {
-      $(b.dataset.copy).select();
-    }
-  }));
   new ResizeObserver(fitDevice).observe($('device-wrap'));
 }
 
@@ -228,7 +215,6 @@ function hostForm(frame, payload) {
   const { context, token } = sdk;
   const doc = resolveDoc(context);
   ctx = { doc, token };
-  $('doc-path').textContent = `/${doc.org}/${doc.site}${doc.path}`;
   wire();
   if (!doc.org || !doc.site || doc.path === '/') {
     setStatus('Open this app from a structured content document.', 'err');
