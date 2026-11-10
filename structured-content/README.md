@@ -46,6 +46,7 @@ Author (SC form editor) ──save──▶ DA source /roasts/<slug>
 
 - Edit the schema: `https://da.live/app/aemsites/sc-editor/schemas#/aemxsc/frescopa26`
 - Edit a record: open `/roasts/morning-ritual` in DA, or go to `https://da.live/app/aemsites/sc-editor/form#/aemxsc/frescopa26/roasts/morning-ritual`
+- **Images:** the editor has no asset picker yet, so **Image URL** is a plain https URL. Upload the image to the site's DA `/media` folder, preview and publish it, then paste its `https://main--frescopa26--aemxsc.aem.live/media/...` URL. The blocks render site media as responsive pictures, and any other https URL as a plain image.
 - Click **Save**, then **Send → Preview & Publish**. Publishing reindexes the record, so it shows up in `roast-list`.
 
 ## Try the API
