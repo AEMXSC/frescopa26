@@ -11,15 +11,15 @@
  *               {slug} x · {org} · {site}
  *   Devices: kiosk 1080×1920 · desktop 1280×800 · phone 390×844
  *
- * "Send to preview" = AEM preview of the record + Structured Content API
- * reindex of that path, so even brand-new records show up in channel queries.
+ * Authors use the form's own Send. This app watches the record and refreshes
+ * the channel (and reindexes the path) when a preview or publish lands.
  */
 // eslint-disable-next-line import/no-unresolved
 import DA_SDK from 'https://da.live/nx/utils/sdk.js';
 
 const FORM_APP = 'https://da.live/app/aemsites/sc-editor/form#';
 const DA_ADMIN = 'https://admin.da.live';
-const HLX_ADMIN = 'https://admin.hlx.page';
+const DA_SC = 'https://da-sc.adobeaem.workers.dev';
 const SC_API = 'https://sc-api.adobeaem.workers.dev';
 const DEVICES = {
   kiosk: { w: 1080, h: 1920 },
@@ -141,39 +141,48 @@ function render() {
   fitDevice();
 }
 
-async function sendToPreview() {
+/* ---- Watch the record: when the form's Send lands, refresh the channel ----
+ * Reads the record from da-sc for the tier on screen. On a change it reindexes
+ * that path in the Structured Content API (so brand-new records also appear in
+ * channel queries) and reloads the preview. No manual reload needed. */
+const WATCH_MS = 4000;
+const seen = { preview: undefined, live: undefined };
+
+async function reindex(t) {
   const { doc, token } = ctx;
-  const button = $('send-preview');
-  button.disabled = true;
-  setStatus('Sending to preview…');
+  const resp = await fetch(`${SC_API}/${t}/${doc.org}/${doc.site}/query.json`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ paths: [doc.path] }),
+  });
+  if (!resp.ok) throw new Error(`index ${resp.status}`);
+}
+
+async function watch() {
+  const { doc } = ctx;
+  const t = tier;
   try {
-    const hlx = { Authorization: `Bearer ${token}`, 'x-content-source-authorization': `Bearer ${token}` };
-    const pre = await fetch(`${HLX_ADMIN}/preview/${doc.org}/${doc.site}/main${doc.path}`, { method: 'POST', headers: hlx });
-    if (!pre.ok) throw new Error(`Preview failed (${pre.status}). Save the form first, and check your publish permission.`);
-    setStatus('Updating channel index…');
-    const idx = await fetch(`${SC_API}/preview/${doc.org}/${doc.site}/query.json`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ paths: [doc.path] }),
+    const resp = await fetch(`${DA_SC}/${t}/${doc.org}/${doc.site}${doc.path}`, { cache: 'no-store' });
+    const body = resp.ok ? await resp.text() : `missing:${resp.status}`;
+    const before = seen[t];
+    seen[t] = body;
+    if (before === undefined || before === body) return;
+    setStatus(`${t === 'live' ? 'Published' : 'Preview'} change detected, updating channel…`);
+    await reindex(t).catch((error) => {
+      // eslint-disable-next-line no-console
+      console.warn('channel preview: reindex failed, channel may lag', error);
     });
-    if (!idx.ok) throw new Error(`Previewed, but the channel index did not update (${idx.status}).`);
-    tier = 'preview';
-    document.querySelectorAll('[data-tier]').forEach((b) => b.classList.toggle('on', b.dataset.tier === 'preview'));
     render();
-    setStatus(`Previewed at ${new Date().toLocaleTimeString()}`, 'ok');
+    setStatus(`Updated ${new Date().toLocaleTimeString()} · watching for changes`, 'ok');
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('channel preview: send failed', error);
-    setStatus(error.message, 'err');
-  } finally {
-    button.disabled = false;
+    console.warn('channel preview: watch failed', error);
   }
 }
 
 function wire() {
   $('channel').addEventListener('change', render);
   $('reload').addEventListener('click', render);
-  $('send-preview').addEventListener('click', sendToPreview);
   document.querySelectorAll('[data-tier]').forEach((b) => b.addEventListener('click', () => {
     tier = b.dataset.tier;
     document.querySelectorAll('[data-tier]').forEach((x) => x.classList.toggle('on', x === b));
@@ -204,6 +213,8 @@ function wire() {
   const schema = await detectSchema(doc, token);
   channels = await loadChannels(doc, token, schema);
   $('channel').replaceChildren(...channels.map((c) => Object.assign(document.createElement('option'), { textContent: c.label })));
-  setStatus(schema ? `Schema: ${schema}` : 'Schema not detected: showing all channels');
+  setStatus(schema ? `Schema: ${schema} · watching for changes` : 'Schema not detected: showing all channels');
   render();
+  watch();
+  setInterval(watch, WATCH_MS);
 }());
