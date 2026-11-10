@@ -4,6 +4,7 @@
  *
  * URL params: ?tier=preview  read previewed (unpublished) content
  *             ?poll=15       seconds between content syncs (default 15)
+ *             ?start=menu    skip the attract loop (presenter shortcut)
  */
 /* eslint-disable no-use-before-define -- actions is defined once at load, used at call time */
 import {
@@ -28,7 +29,7 @@ const stage = document.getElementById('stage');
 const initial = {
   tier: getTier(),
   products: [],
-  view: 'attract',
+  view: params.get('start') === 'menu' ? 'menu' : 'attract',
   slide: 0,
   filter: 'All',
   current: null,
