@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Channel Preview</title>
+  <link rel="stylesheet" href="/tools/kiosk-studio/kiosk-studio.css">
+  <script src="/tools/kiosk-studio/kiosk-studio.js" type="module"></script>
+</head>
+<body>
+  <header class="studio-bar">
+    <div class="doc">
+      <span class="doc-label">Structured content</span>
+      <strong class="doc-path" id="doc-path">Loading…</strong>
+    </div>
+    <label class="field">
+      <span>Channel</span>
+      <select id="channel"></select>
+    </label>
+    <div class="urls">
+      <label class="field url">
+        <span>Preview URL</span>
+        <span class="url-row">
+          <input id="preview-url" readonly>
+          <button type="button" class="icon" data-copy="preview-url" title="Copy preview URL">Copy</button>
+          <a class="icon" id="preview-open" target="_blank" rel="noopener" title="Open preview">Open</a>
+        </span>
+      </label>
+      <label class="field url">
+        <span>Publish URL</span>
+        <span class="url-row">
+          <input id="live-url" readonly>
+          <button type="button" class="icon" data-copy="live-url" title="Copy publish URL">Copy</button>
+          <a class="icon" id="live-open" target="_blank" rel="noopener" title="Open published">Open</a>
+        </span>
+      </label>
+    </div>
+    <button type="button" class="primary" id="send-preview" title="Save in the form first">Send to preview</button>
+  </header>
+  <main class="studio">
+    <section class="pane form-pane" aria-label="Content form">
+      <iframe id="form-frame" title="Structured content form"></iframe>
+    </section>
+    <section class="pane preview-pane" aria-label="Channel preview">
+      <div class="preview-head">
+        <div class="tier" role="group" aria-label="Content tier">
+          <button type="button" data-tier="preview" class="on">Preview</button>
+          <button type="button" data-tier="live">Published</button>
+        </div>
+        <span id="status" class="status" role="status"></span>
+        <button type="button" class="ghost" id="reload">Reload</button>
+      </div>
+      <div class="device-wrap" id="device-wrap">
+        <div class="device" id="device">
+          <iframe id="preview-frame" title="Channel preview"></iframe>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
