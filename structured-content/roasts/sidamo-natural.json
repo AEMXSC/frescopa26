@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "schemaName": "roast",
+    "title": "Sidamo Natural"
+  },
+  "data": {
+    "name": "Sidamo Natural",
+    "origin": "Sidamo, Ethiopia",
+    "roastLevel": "Light",
+    "tastingNotes": [
+      "Blueberry",
+      "Strawberry jam",
+      "Cacao"
+    ],
+    "description": "Sun-dried naturals that taste like fruit preserves. A weekend coffee.",
+    "price": 23,
+    "bagSize": "250g",
+    "featured": false
+  }
+}

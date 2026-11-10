@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "schemaName": "roast",
+    "title": "Yirgacheffe Bloom"
+  },
+  "data": {
+    "name": "Yirgacheffe Bloom",
+    "origin": "Yirgacheffe, Ethiopia",
+    "roastLevel": "Light",
+    "tastingNotes": [
+      "Jasmine",
+      "Bergamot",
+      "Lemon curd"
+    ],
+    "description": "Washed heirloom lots with a floral lift. Best as a pour-over or a long black.",
+    "price": 21,
+    "bagSize": "250g",
+    "featured": true
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "schemaName": "roast",
+    "title": "Atelier Decaf"
+  },
+  "data": {
+    "name": "Atelier Decaf",
+    "origin": "Huila, Colombia (sugarcane process)",
+    "roastLevel": "Medium",
+    "tastingNotes": [
+      "Brown sugar",
+      "Hazelnut",
+      "Orange"
+    ],
+    "description": "Naturally decaffeinated with sugarcane ethyl acetate, so the sweetness stays.",
+    "price": 18,
+    "bagSize": "250g",
+    "featured": false
+  }
+}

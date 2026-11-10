@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "schemaName": "roast",
+    "title": "Midnight Espresso"
+  },
+  "data": {
+    "name": "Midnight Espresso",
+    "origin": "Sumatra & Guatemala blend",
+    "roastLevel": "Dark",
+    "tastingNotes": [
+      "Dark chocolate",
+      "Molasses",
+      "Cedar"
+    ],
+    "description": "Heavy body and low acidity for a dense, syrupy shot that cuts through milk.",
+    "price": 17,
+    "bagSize": "250g",
+    "featured": true
+  }
+}

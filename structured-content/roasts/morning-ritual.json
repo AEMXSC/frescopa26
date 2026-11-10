@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "schemaName": "roast",
+    "title": "Morning Ritual"
+  },
+  "data": {
+    "name": "Morning Ritual",
+    "origin": "Colombia & Brazil blend",
+    "roastLevel": "Medium",
+    "tastingNotes": [
+      "Milk chocolate",
+      "Toasted almond",
+      "Caramel"
+    ],
+    "description": "The everyday cup the Atelier was tuned on. Round, sweet and forgiving in milk or black.",
+    "price": 16,
+    "bagSize": "250g",
+    "featured": true
+  }
+}

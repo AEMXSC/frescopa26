@@ -1,0 +1,95 @@
+/* Block: roast
+ * Detail view for a "roast" structured content record. Placeholder media is a
+ * gradient keyed to roast level (no product photography in the schema yet).
+ */
+
+.roast {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  align-items: center;
+}
+
+.roast .roast-media {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--r-lg);
+  background: linear-gradient(135deg, var(--paper-2), var(--paper-3));
+}
+
+.roast .roast-level-light { background: linear-gradient(135deg, var(--paper-2), var(--amber-soft)); }
+.roast .roast-level-dark { background: linear-gradient(135deg, var(--paper-3), var(--burgundy)); }
+
+.roast .roast-media-label {
+  font-family: var(--font-display);
+  font-size: var(--fs-h4);
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.roast .roast-level-dark .roast-media-label { color: var(--paper); }
+
+.roast .roast-badge {
+  position: absolute;
+  top: 0.9rem;
+  left: 0.9rem;
+  padding: 0.3em 0.7em;
+  border-radius: var(--r-pill);
+  background-color: var(--amber-soft);
+  color: var(--terracotta-deep);
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.roast .roast-origin {
+  margin: 0;
+  font-size: var(--body-font-size-xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--terracotta-deep);
+}
+
+.roast .roast-name { margin: 0.4rem 0 1rem; }
+
+.roast .roast-notes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 1rem 0;
+  padding: 0;
+  list-style: none;
+}
+
+.roast .roast-notes li {
+  padding: 0.25em 0.75em;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  font-size: var(--body-font-size-xs);
+}
+
+.roast .roast-foot {
+  display: flex;
+  gap: 1rem;
+  align-items: baseline;
+}
+
+.roast .roast-price {
+  font-size: var(--fs-h4);
+  font-weight: 700;
+
+}
+
+.roast .roast-size {
+  color: var(--text-color);
+  opacity: 0.7;
+}
+
+@media (width >= 900px) {
+  .roast {
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+  }
+}

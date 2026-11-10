@@ -6,3 +6,5 @@ package.json
 package-lock.json
 test/*
 stardust/
+structured-content/
+tools/structured-content/
