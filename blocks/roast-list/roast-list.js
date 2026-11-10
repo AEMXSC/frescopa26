@@ -1,4 +1,4 @@
-import { buildNotes, formatPrice } from '../roast/roast.js';
+import { buildImage, buildNotes, formatPrice } from '../roast/roast.js';
 
 /**
  * Roast list — a grid of "roast" structured content records, read live from
@@ -66,7 +66,9 @@ function buildCard({ path, data }) {
 
   const level = String(data.roastLevel || '').toLowerCase();
   const media = el('div', `roast-list-media roast-level-${level || 'unknown'}`);
-  media.append(el('span', 'roast-list-level', data.roastLevel ? `${data.roastLevel} roast` : 'Roast'));
+  const image = buildImage(data.image, data.imageAlt || data.name);
+  if (image) media.append(image);
+  else media.append(el('span', 'roast-list-level', data.roastLevel ? `${data.roastLevel} roast` : 'Roast'));
   if (data.featured === true) media.append(el('span', 'roast-badge', 'Most loved'));
 
   const body = el('div', 'roast-list-body');

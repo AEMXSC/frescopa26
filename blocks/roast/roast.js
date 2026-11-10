@@ -11,6 +11,7 @@
  * product view. Field keys come from the label heading's text, which keeps the
  * schema's original casing.
  */
+import { createOptimizedPicture } from '../../scripts/aem.js';
 
 function readFields(block) {
   const fields = {};
@@ -39,6 +40,29 @@ export function formatPrice(value) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
 }
 
+/**
+ * Image from the record's "image" URL field. EDS media (…/media_<hash>.ext,
+ * on any aem.page/aem.live host) is rendered as a responsive picture from the
+ * current host; any other https URL is used as-is. Returns null if invalid.
+ */
+export function buildImage(value, alt = '', eager = false) {
+  let url;
+  try {
+    url = new URL(value);
+  } catch {
+    return null;
+  }
+  if (url.protocol !== 'https:') return null;
+  if (/^\/(media\/)?media_[0-9a-f]+\.(jpe?g|png|webp|gif)$/i.test(url.pathname)) {
+    return createOptimizedPicture(url.pathname, alt, eager, [{ media: '(min-width: 900px)', width: '1200' }, { width: '750' }]);
+  }
+  const img = document.createElement('img');
+  img.src = url.href;
+  img.alt = alt;
+  img.loading = eager ? 'eager' : 'lazy';
+  return img;
+}
+
 export function buildNotes(notes) {
   const list = el('ul', 'roast-notes');
   (Array.isArray(notes) ? notes : []).forEach((note) => list.append(el('li', '', note)));
@@ -50,7 +74,9 @@ export default function decorate(block) {
   const level = (f.roastLevel || '').toLowerCase();
 
   const media = el('div', `roast-media roast-level-${level || 'unknown'}`);
-  media.append(el('span', 'roast-media-label', f.roastLevel ? `${f.roastLevel} roast` : 'Roast'));
+  const image = buildImage(f.image, f.imageAlt || f.name || '', true);
+  if (image) media.append(image);
+  else media.append(el('span', 'roast-media-label', f.roastLevel ? `${f.roastLevel} roast` : 'Roast'));
 
   const body = el('div', 'roast-body');
   if (f.origin) body.append(el('p', 'roast-origin', f.origin));
