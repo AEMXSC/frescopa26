@@ -32,7 +32,7 @@ export function recordUrl(path, tier = getTier()) {
 
 async function getJson(url) {
   const resp = await fetch(url, { cache: 'no-store' });
-  if (!resp.ok) throw new Error(`${resp.status} from ${url}`);
+  if (!resp.ok) throw Object.assign(new Error(`${resp.status} from ${url}`), { status: resp.status });
   return resp.json();
 }
 
@@ -68,8 +68,9 @@ export async function loadCatalogue(tier = getTier()) {
   const fresh = await Promise.all(items.map(async (item) => {
     try {
       return toProduct(item.path, await getJson(recordUrl(item.path, tier)));
-    } catch {
-      return toProduct(item.path, item);
+    } catch (error) {
+      // 404 = unpublished: drop it even if the index still lists it.
+      return error.status === 404 ? null : toProduct(item.path, item);
     }
   }));
   return fresh
