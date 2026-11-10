@@ -38,9 +38,9 @@ function readConfig(block) {
 export function buildQueryUrl({ roastLevel }, hostname = window.location.hostname) {
   const tier = hostname.endsWith('.aem.live') ? 'live' : 'preview';
   const url = new URL(`${SC_API}/${tier}/${SITE.org}/${SITE.site}/query.json`);
-  const terms = [roastLevel && `roastLevel:${roastLevel}`].filter(Boolean);
-  if (terms.length) url.searchParams.set('q', terms.join(' '));
-  // Over-fetch: schema and featured filtering happen client-side.
+  // Terms are ANDed server-side. selectRoasts() re-checks the schema client-side.
+  const terms = [`schemaName:${SCHEMA}`, roastLevel && `roastLevel:${roastLevel}`].filter(Boolean);
+  url.searchParams.set('q', terms.join(' '));
   url.searchParams.set('limit', '200');
   return url;
 }
