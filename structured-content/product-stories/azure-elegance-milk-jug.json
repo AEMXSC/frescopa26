@@ -1,0 +1,13 @@
+{
+  "metadata": {
+    "schemaName": "product-story",
+    "title": "Azure Elegance Milk Jug"
+  },
+  "data": {
+    "sku": "ACC511",
+    "name": "Azure Elegance Milk Jug",
+    "image": "https://main--frescopa26--aemxsc.aem.live/media/media_1a75229f0e74d87f22d5305aa33e46572db1d67d2.jpg",
+    "imageAlt": "Latte with leaf latte art in a dark cup",
+    "featured": false
+  }
+}

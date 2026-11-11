@@ -1,0 +1,13 @@
+{
+  "metadata": {
+    "schemaName": "product-story",
+    "title": "Cappuccino Mug"
+  },
+  "data": {
+    "sku": "ACC558",
+    "name": "Cappuccino Mug",
+    "image": "https://main--frescopa26--aemxsc.aem.live/media/media_10ae11025055e35d1e06d039b05d6b473f660c710.jpg",
+    "imageAlt": "Cappuccino on a saucer at a sunlit wooden table",
+    "featured": false
+  }
+}

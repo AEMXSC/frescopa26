@@ -1,0 +1,13 @@
+{
+  "metadata": {
+    "schemaName": "product-story",
+    "title": "House Blend - Expresso"
+  },
+  "data": {
+    "sku": "HBEX213",
+    "name": "House Blend - Expresso",
+    "image": "https://www.frescopa.coffee/media_14dda38183367f1ef5f700eaf66d1a13a59bdd756.jpg",
+    "imageAlt": "Kraft bag of Fréscopa coffee beside fresh grounds",
+    "featured": false
+  }
+}

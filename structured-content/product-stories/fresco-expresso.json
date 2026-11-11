@@ -1,0 +1,13 @@
+{
+  "metadata": {
+    "schemaName": "product-story",
+    "title": "Fresco Expresso"
+  },
+  "data": {
+    "sku": "CSM5148",
+    "name": "Fresco Expresso",
+    "image": "https://www.frescopa.coffee/media_1dd4513b3aaf352944950aa2185c9927305b2f93d.png",
+    "imageAlt": "Fresco Expresso machine beside a cup of coffee",
+    "featured": false
+  }
+}

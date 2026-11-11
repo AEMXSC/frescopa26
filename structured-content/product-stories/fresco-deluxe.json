@@ -1,0 +1,13 @@
+{
+  "metadata": {
+    "schemaName": "product-story",
+    "title": "Fresco Deluxe"
+  },
+  "data": {
+    "sku": "CSM5131",
+    "name": "Fresco Deluxe",
+    "image": "https://www.frescopa.coffee/media_1db811b17fbc255479a69bb6ae75e55e55fbd2ea3.png",
+    "imageAlt": "Fresco Deluxe espresso machine with portafilter and cup",
+    "featured": false
+  }
+}

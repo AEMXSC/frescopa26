@@ -1,0 +1,13 @@
+{
+  "metadata": {
+    "schemaName": "product-story",
+    "title": "Fresco Original"
+  },
+  "data": {
+    "sku": "CSM5125",
+    "name": "Fresco Original",
+    "image": "https://www.frescopa.coffee/media_1b37b66e87d844199ff136582ca6c1f13bce38563.png",
+    "imageAlt": "Fresco coffee machine with glass carafe on a stone counter",
+    "featured": false
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "metadata": {
+    "schemaName": "product-story",
+    "title": "Insulated Travel Thermos"
+  },
+  "data": {
+    "sku": "ITT743",
+    "name": "Insulated Travel Thermos",
+    "image": "https://main--frescopa26--aemxsc.aem.live/media/media_14e3e84e849cba3b2e8b609fc3d511b0fe630bfaf.jpg",
+    "imageAlt": "Coffee poured over ice in two tall glasses beside scattered beans",
+    "featured": false
+  }
+}

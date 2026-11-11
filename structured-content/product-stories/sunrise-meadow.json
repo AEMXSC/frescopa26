@@ -1,0 +1,13 @@
+{
+  "metadata": {
+    "schemaName": "product-story",
+    "title": "Sunrise Meadow"
+  },
+  "data": {
+    "sku": "TEA103",
+    "name": "Sunrise Meadow",
+    "image": "https://www.frescopa.coffee/media_126153dedaaab1e3fdd811716e201bae4bcfcf30f.jpg",
+    "imageAlt": "Cup of tea with loose leaves and orange peel on a wooden table",
+    "featured": false
+  }
+}

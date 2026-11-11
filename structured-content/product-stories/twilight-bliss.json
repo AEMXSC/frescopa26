@@ -1,0 +1,13 @@
+{
+  "metadata": {
+    "schemaName": "product-story",
+    "title": "Twilight Bliss"
+  },
+  "data": {
+    "sku": "TEA106",
+    "name": "Twilight Bliss",
+    "image": "https://www.frescopa.coffee/media_126153dedaaab1e3fdd811716e201bae4bcfcf30f.jpg",
+    "imageAlt": "Cup of tea with loose leaves and orange peel on a wooden table",
+    "featured": false
+  }
+}

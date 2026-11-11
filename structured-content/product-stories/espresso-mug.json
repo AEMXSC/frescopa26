@@ -1,0 +1,13 @@
+{
+  "metadata": {
+    "schemaName": "product-story",
+    "title": "Espresso Mug"
+  },
+  "data": {
+    "sku": "ACC563",
+    "name": "Espresso Mug",
+    "image": "https://www.frescopa.coffee/media_132718180b6190179a138b13595a42c32f51665ed.jpg",
+    "imageAlt": "Espresso pouring from a portafilter into a glass",
+    "featured": false
+  }
+}

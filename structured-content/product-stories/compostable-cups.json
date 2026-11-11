@@ -1,0 +1,13 @@
+{
+  "metadata": {
+    "schemaName": "product-story",
+    "title": "Compostable Cups"
+  },
+  "data": {
+    "sku": "ACC341",
+    "name": "Compostable Cups",
+    "image": "https://www.frescopa.coffee/media_1ae7b300835f4da72460fc57fdcfd83341890a158.jpg",
+    "imageAlt": "A sunlit Fréscopa café with guests at long wooden tables",
+    "featured": false
+  }
+}
