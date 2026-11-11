@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "schemaName": "product-story",
+    "title": "The Barista"
+  },
+  "data": {
+    "sku": "CSM6003",
+    "name": "The Barista",
+    "headline": "Hands-on espresso, done properly.",
+    "story": "A manual espresso machine for people who like to pull their own shot: pressure gauge, steam wand and full control.",
+    "highlights": [
+      "Manual control",
+      "Steam wand",
+      "Pressure gauge"
+    ],
+    "image": "https://main--frescopa26--aemxsc.aem.live/media/media_1db811b17fbc255479a69bb6ae75e55e55fbd2ea3.png",
+    "imageAlt": "The Barista manual espresso machine with portafilter and cup",
+    "featured": false
+  }
+}

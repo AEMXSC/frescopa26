@@ -1,0 +1,56 @@
+{
+  "title": "Product story",
+  "description": "AEM-owned story and imagery for an Adobe Commerce product, joined by SKU. Commerce owns name, price and stock.",
+  "type": "object",
+  "required": [
+    "sku",
+    "name"
+  ],
+  "properties": {
+    "sku": {
+      "type": "string",
+      "title": "Commerce SKU",
+      "pattern": "^[A-Za-z0-9-]{2,40}$"
+    },
+    "name": {
+      "type": "string",
+      "title": "Internal name",
+      "maxLength": 80
+    },
+    "headline": {
+      "type": "string",
+      "title": "Headline",
+      "maxLength": 80
+    },
+    "story": {
+      "type": "string",
+      "title": "Story",
+      "maxLength": 500,
+      "x-semantic-type": "long-text"
+    },
+    "highlights": {
+      "type": "array",
+      "title": "Highlights",
+      "maxItems": 4,
+      "items": {
+        "type": "string",
+        "title": "Highlight"
+      }
+    },
+    "image": {
+      "type": "string",
+      "title": "Image URL",
+      "pattern": "^https://"
+    },
+    "imageAlt": {
+      "type": "string",
+      "title": "Image alt text",
+      "maxLength": 160
+    },
+    "featured": {
+      "type": "boolean",
+      "title": "Featured",
+      "default": false
+    }
+  }
+}

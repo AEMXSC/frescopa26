@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "schemaName": "product-story",
+    "title": "The Atelier Mini"
+  },
+  "data": {
+    "sku": "CSM6002",
+    "name": "The Atelier Mini",
+    "headline": "The same clever heart, smaller kitchen.",
+    "story": "Everything that makes The Atelier smart, in a footprint made for apartments and small spaces.",
+    "highlights": [
+      "Compact",
+      "Bean-to-cup"
+    ],
+    "image": "https://main--frescopa26--aemxsc.aem.live/media/media_1017eb8d437ebe44b4a61e0865dcaef05ff3d934a.png",
+    "imageAlt": "The Atelier Mini on a stone counter",
+    "featured": false
+  }
+}

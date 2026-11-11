@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "schemaName": "product-story",
+    "title": "The Everyday"
+  },
+  "data": {
+    "sku": "CSM6004",
+    "name": "The Everyday",
+    "headline": "Honest espresso, every single morning.",
+    "story": "One touch, easy to clean, and built to make a great cup without thinking about it.",
+    "highlights": [
+      "One-touch",
+      "Easy clean"
+    ],
+    "image": "https://main--frescopa26--aemxsc.aem.live/media/media_1dd4513b3aaf352944950aa2185c9927305b2f93d.png",
+    "imageAlt": "The Everyday espresso machine beside a cup of coffee",
+    "featured": false
+  }
+}

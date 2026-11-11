@@ -8,6 +8,12 @@
     "price"
   ],
   "properties": {
+    "sku": {
+      "type": "string",
+      "title": "Commerce SKU",
+      "description": "Links this story to an Adobe Commerce product. Commerce owns price and stock.",
+      "pattern": "^[A-Za-z0-9-]{2,40}$"
+    },
     "name": {
       "type": "string",
       "title": "Name",

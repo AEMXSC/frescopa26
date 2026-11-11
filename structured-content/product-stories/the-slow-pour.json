@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "schemaName": "product-story",
+    "title": "The Slow Pour"
+  },
+  "data": {
+    "sku": "CSM6005",
+    "name": "The Slow Pour",
+    "headline": "Filter coffee, unhurried.",
+    "story": "A beautifully made filter brewer for slow mornings and a full glass carafe.",
+    "highlights": [
+      "Filter brewer",
+      "Glass carafe"
+    ],
+    "image": "https://main--frescopa26--aemxsc.aem.live/media/media_1d34c4d078381820a4960089ca6fa50b65f695921.png",
+    "imageAlt": "The Slow Pour filter brewer with glass carafe",
+    "featured": false
+  }
+}

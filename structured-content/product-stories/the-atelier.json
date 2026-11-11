@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "schemaName": "product-story",
+    "title": "The Atelier"
+  },
+  "data": {
+    "sku": "CSM6001",
+    "name": "The Atelier",
+    "headline": "Every morning, perfected.",
+    "story": "Our flagship bean-to-cup machine learns how you take your coffee, matches your mood, and takes care of the rest.",
+    "highlights": [
+      "Learns your taste",
+      "Bean-to-cup",
+      "Three finishes"
+    ],
+    "image": "https://main--frescopa26--aemxsc.aem.live/media/media_1a775c161149ea61e50ce787b6c0adb646148c6ca.jpg",
+    "imageAlt": "The Atelier espresso machine on a kitchen counter in morning light",
+    "featured": true
+  }
+}
