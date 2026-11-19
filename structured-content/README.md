@@ -67,9 +67,10 @@ You can also use the explorer: https://sc-api.adobeaem.workers.dev/explorer/
 
 ## Channel Preview (author experience)
 
-Opening a roast in DA opens **Channel Preview** ([tools/kiosk-studio](../tools/kiosk-studio/)). It shows the form on the left and a live channel preview on the right: the kiosk (https://frescopa-kiosk.vercel.app), the website, or a phone, each in its own device frame.
+Opening a roast in DA opens **SC Studio**, a shared DA app that now lives in its own repo, [AEMXSC/sc-studio](https://github.com/AEMXSC/sc-studio) (it began here as `tools/kiosk-studio`). It shows the form on the left and a live channel preview on the right: the kiosk (https://frescopa-kiosk.vercel.app), the website, or a phone, each in its own device frame.
 
 - Edit in the form, then click the form's **Send**. Within about 4 seconds the channel refreshes by itself, and the record is reindexed so new roasts appear in the kiosk menu straight away.
 - Use **Preview / Published** to compare the draft with what's live.
-- Channels come from the `previews` sheet in the site config (`https://da.live/config#/aemxsc/frescopa26/`), with one row per channel: `schema | label | url | device`. URL tokens are `{tier}`, `{tld}` (page|live), `{path}`, `{slug}`, `{org}` and `{site}`. Devices are `kiosk`, `desktop` and `phone`. If the sheet is missing, the app falls back to built-in defaults.
-- `editor.path` in the org config maps `/aemxsc/frescopa26/roasts` to `https://da.live/app/aemxsc/frescopa26/tools/kiosk-studio/kiosk-studio#`.
+- Channels come from the `previews` sheet in the site config (`https://da.live/config#/aemxsc/frescopa26/`), with one row per channel: `schema | label | url | device`. URL tokens are `{tier}`, `{tld}` (page|live), `{path}`, `{slug}`, `{org}` and `{site}`. Devices are `kiosk`, `desktop` and `phone`. If the sheet is missing, the app shows the form only.
+- `editor.path` in the org config maps `/aemxsc/frescopa26/roasts` to `https://da.live/app/aemxsc/sc-studio/studio#`.
+- To change the app itself, see the [sc-studio README](https://github.com/AEMXSC/sc-studio#readme). Other sites use it too.
