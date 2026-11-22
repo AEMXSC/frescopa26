@@ -46,10 +46,38 @@ async function saveConfig({ org, repo }, token, json) {
   if (!res.ok) throw new Error(`Saving the setup failed (HTTP ${res.status}). Nothing was changed; try again.`);
 }
 
-function previewFrame(html) {
-  // no scripts run in it (sandbox without allow-scripts); same origin only so its height can be read
+/** a site template for a model, shipped with the site: templates/<model name>.html, else null */
+async function siteTemplate(model) {
+  const name = String(model.path || '').split('/').pop();
+  if (!/^[a-z0-9-]+$/.test(name)) return null;
+  try {
+    const res = await fetch(new URL(`./templates/${name}.html`, window.location.href), { cache: 'no-store' });
+    return res.ok ? { file: `templates/${name}.html`, html: (await res.text()).trim() } : null;
+  } catch { return null; }
+}
+
+/**
+ * The sample as the site shows it: the block decorated by the site's own block code (in an inert
+ * document) and the site's stylesheets. Undecorated markup if the block code cannot run here.
+ */
+async function siteSample(html) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const block = doc.body.firstElementChild;
+  const name = block?.classList[0];
+  if (!name || !/^[a-z0-9-]+$/.test(name)) return { html, css: [] };
+  try {
+    const mod = await import(`/blocks/${name}/${name}.js`);
+    await mod.default(block);
+  } catch { /* shown undecorated */ }
+  return { html: doc.body.innerHTML, css: ['/styles/styles.css', `/blocks/${name}/${name}.css`] };
+}
+
+function previewFrame({ html, css }) {
+  // no scripts run in it (sandbox without allow-scripts); same origin so its height can be read
+  // and the site's stylesheets load
+  const links = css.map((href) => `<link rel="stylesheet" href="${href}">`).join('');
   const frame = el('iframe', {
-    class: 'preview', sandbox: 'allow-same-origin', title: 'Sample rendering', srcdoc: `<style>html{color-scheme:light}body{font:14px system-ui;margin:8px}img{max-width:100%;height:auto}</style>${html}`,
+    class: 'preview', sandbox: 'allow-same-origin', title: 'Sample rendering', srcdoc: `${links}<style>html{color-scheme:light}body{margin:12px}img{max-width:100%;height:auto}</style>${html}`,
   });
   frame.addEventListener('load', () => {
     const doc = frame.contentDocument;
@@ -62,21 +90,24 @@ function previewFrame(html) {
   return frame;
 }
 
-function modelCard(model, sample, existing, broker, base) {
+function modelCard(model, sample, existing, broker, base, site) {
   const keepFile = !!existing?.template && !existing?.html;
   const name = model.title || model.name;
   const use = el('input', { type: 'checkbox', checked: !keepFile });
+  // the saved template, else the site's template for this model, else the starter
+  const fresh = () => site?.html || starterTemplate(model);
   const area = el('textarea', {
-    class: 'nx-input code', rows: 6, spellcheck: 'false', 'aria-label': `Template for ${name}`, value: existing?.html || starterTemplate(model),
+    class: 'nx-input code', rows: 6, spellcheck: 'false', 'aria-label': `Template for ${name}`, value: existing?.html || fresh(),
   });
   const out = el('div', { class: 'sample' });
   const draw = async () => {
     if (!sample) { out.replaceChildren(el('p', { class: 'muted', text: 'No fragment of this model in the folder to preview.' })); return; }
     try {
       const snap = await broker.get(sample.id);
+      const shown = await siteSample(render(area.value, fragmentData(snap.data, { path: sample.path, ...base })));
       out.replaceChildren(
-        el('p', { class: 'muted', text: `Sample: ${sample.path.split('/').pop()}, rendered with this template (without the site's styles).` }),
-        previewFrame(render(area.value, fragmentData(snap.data, { path: sample.path, ...base }))),
+        el('p', { class: 'muted', text: `Sample: ${sample.path.split('/').pop()}, as this site shows it.` }),
+        previewFrame(shown),
       );
     } catch (e) { out.replaceChildren(el('p', { class: 'error', text: e.message })); }
   };
@@ -90,10 +121,11 @@ function modelCard(model, sample, existing, broker, base) {
     el('strong', { text: name }),
     el('p', { class: 'path', text: fields ? `Fields: ${fields}` : model.path }),
     keepFile ? el('p', { class: 'muted', text: `Uses the template file ${existing.template}. Tick "Use this template" to replace it.` }) : null,
+    site && !existing?.html ? el('p', { class: 'muted', text: `This site's template for the model (${site.file}).` }) : null,
     out,
     el('label', { class: 'check' }, use, el('span', { text: 'Use this template' })),
     el('details', {}, el('summary', { text: 'Edit template (HTML)' }), area, el('div', { class: 'actions' }, el('button', {
-      type: 'button', class: 'nx-action-btn-quiet', text: 'Reset to starter', onclick: () => { area.value = starterTemplate(model); draw(); },
+      type: 'button', class: 'nx-action-btn-quiet', text: site ? 'Reset to site template' : 'Reset to starter', onclick: () => { area.value = fresh(); draw(); },
     }))),
   );
   return { card, value: () => (use.checked ? { model: model.path, label: name, html: area.value.trim() } : null) };
@@ -210,9 +242,10 @@ export default async function runSetup({
     if (!byModel.size) throw new Error(`No Content Fragments in ${state.folder}. Pick another folder.`);
     const base = { linkBase: state.linkBase.replace(/\/$/, ''), assetBase: `https://${state.author.replace(/^author-/, 'publish-')}` };
     const models = await Promise.all([...byModel.keys()].map((id) => b.model(id)));
+    const sites = await Promise.all(models.map(siteTemplate));
     const samples = [...byModel.values()];
     const existing = (m) => config.models.find((x) => x.model === m.path || x.model === m.id);
-    const cards = models.map((m, i) => modelCard(m, samples[i], existing(m), b, base));
+    const cards = models.map((m, i) => modelCard(m, samples[i], existing(m), b, base, sites[i]));
     say('');
     const save = el('button', { type: 'button', class: 'nx-btn-accent wide', text: saveLabel });
     save.onclick = async () => {
