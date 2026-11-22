@@ -152,7 +152,13 @@ const DRIFT = {
     ? `Page differs from AEM: ${names.join(', ')} can't be saved from the page. Edit them in the panel.`
     : 'Page differs from AEM'],
   error: (message) => ['error', `Could not save the page's edits: ${message}`],
+  publishing: () => ['neutral', 'Publishing the fragment in AEM, then this page…'],
+  published: () => ['ok', 'Published: the fragment in AEM and this page'],
+  publishError: (message) => ['error', message],
 };
+// states in which the page shows what AEM has, or does not
+const MATCHES = new Set(['same', 'saved', 'published']);
+const MISMATCH = new Set(['differs', 'partial']);
 
 function row(ref) {
   const name = ref.path.split('/').pop();
@@ -164,10 +170,22 @@ function row(ref) {
   };
   const body = el('div', { class: 'body', hidden: true });
   const unsaved = el('span', { class: 'unsaved', text: 'Unsaved', hidden: true });
+  // Publish is offered when the page shows what AEM has, but AEM has not published it
+  let published = true;
+  let matches = false;
+  let expanded = false;
+  let fragmentRef = null;
+  const pubBtn = el('button', {
+    type: 'button', class: 'nx-action-btn nx-btn-sm', text: 'Publish', hidden: true,
+  });
+  const publishable = () => !!fragmentRef && !published && matches;
+  const updatePub = () => { pubBtn.hidden = expanded || !publishable(); };
   const lookup = () => broker.byPath(ref.path).then((f) => {
     if (!f) { setLight('error', 'Not found in AEM'); return null; }
     const st = statusOf(f);
     setLight(st.tone, st.label, f.id);
+    published = st.tone === 'ok';
+    updatePub();
     return f;
   });
   const found = lookup().catch((e) => { setLight('unknown', 'AEM unavailable', e.message); say(e.message, 'error'); return null; });
@@ -177,27 +195,45 @@ function row(ref) {
     class: 'light drift', 'data-tone': 'warn', role: 'status', 'aria-live': 'polite', hidden: true,
   }, el('i', { 'aria-hidden': 'true' }), el('span'));
   const showDrift = (state, detail) => {
+    if (MATCHES.has(state)) matches = true;
+    else if (MISMATCH.has(state)) matches = false;
+    updatePub();
     const [tone, text] = DRIFT[state]?.(detail) || [];
     drift.hidden = !text;
     if (!text) return;
     drift.dataset.tone = tone;
     drift.lastChild.textContent = text;
   };
+  /** the fragment in AEM, then this page (as previewed) on the live site */
+  const publishBoth = async () => {
+    showDrift('publishing');
+    try {
+      await broker.publish(fragmentRef.id);
+      await publishPage();
+      await lookup();
+      showDrift('published');
+    } catch (e) {
+      showDrift('publishError', e.message);
+      throw e;
+    }
+  };
+  pubBtn.onclick = () => {
+    pubBtn.disabled = true;
+    publishBoth().catch(() => {}).finally(() => { pubBtn.disabled = false; }); // the row says what failed
+  };
   let watcher = null;
-  let fragmentRef = null;
   const api = {
     dirty: (on) => { unsaved.hidden = !on; },
     refresh: () => lookup().catch(() => {}),
     saveFromPage: () => watcher?.saveFromPage(),
     aemChanged: () => watcher?.reload(),
+    publishable,
+    publish: publishBoth,
   };
   const reopen = () => {
     // the editor holds AEM's previous content: reload it (it has no unsaved edits, see busy)
     body.replaceChildren();
-    // eslint-disable-next-line no-use-before-define
-    if (toggle.getAttribute('aria-expanded') === 'true' && fragmentRef) {
-      openEditor(services, ref, fragmentRef, body, api).catch(fail);
-    }
+    if (expanded && fragmentRef) openEditor(services, ref, fragmentRef, body, api).catch(fail);
   };
   found.then((fragment) => {
     if (!fragment) return;
@@ -215,6 +251,8 @@ function row(ref) {
       const open = toggle.getAttribute('aria-expanded') === 'true';
       toggle.setAttribute('aria-expanded', String(!open));
       body.hidden = open;
+      expanded = !open;
+      updatePub(); // the editor has its own Publish
       post({ type: 'locate', path: ref.path, variation: ref.variation });
       if (open || body.childElementCount) return;
       body.replaceChildren(el('p', { class: 'muted', text: 'Finding this fragment in AEM…' }));
@@ -223,7 +261,7 @@ function row(ref) {
       openEditor(services, ref, fragment, body, api).catch(fail);
     },
   }, icon('chevrondown'), el('span', { class: 'name-text' }, el('strong', { text: name }), el('span', { class: 'variation', text: ref.variation === 'master' ? 'Main' : ref.variation }), unsaved));
-  return el('li', { class: 'ref' }, toggle, el('div', { class: 'meta' }, light, drift, el('span', { class: 'path', text: ref.path })), body);
+  return el('li', { class: 'ref' }, toggle, el('div', { class: 'meta' }, light, drift, el('span', { class: 'path', text: ref.path }), pubBtn), body);
 }
 
 // the editor's live document, when the host sends one (within ~2 s of subscribing)
