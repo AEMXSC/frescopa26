@@ -39,6 +39,22 @@ export function mergeConfig(raw, { settings, models, panelPath }) {
   return out;
 }
 
+/** does the site's library sheet already have this entry? */
+export function hasLibraryEntry(raw, title) {
+  return (raw?.library?.data || []).some((r) => String(r.title || '').trim() === title);
+}
+
+/**
+ * A reload of the Experience Workspace page this panel runs in (its canvas URL for the same
+ * page), or null outside Workspace. A changed query makes it a real reload, not a hash change.
+ */
+export function workspaceReload(sdk) {
+  const { context, actions, capabilities } = sdk || {};
+  if (!capabilities?.liveDocument || typeof actions?.setHref !== 'function' || !context?.org || !context?.repo) return null;
+  const href = `/canvas?cf-setup=${Date.now()}#/${context.org}/${context.repo}${context.path || ''}`;
+  return () => actions.setHref(href);
+}
+
 async function saveConfig({ org, repo }, token, json) {
   const body = new FormData();
   body.append('config', JSON.stringify(json));
@@ -270,9 +286,14 @@ export default async function runSetup({
           broker: state.broker, author: state.author, 'link-base': state.linkBase, 'advisor-folder': state.folder,
         };
         await saveConfig(context, token, mergeConfig(raw, { settings, models: cards.map((c) => c.value()).filter(Boolean), panelPath: window.location.pathname }));
-        try { if (doneKey) sessionStorage.setItem(doneKey, envName(state.author)); } catch { /* no storage: no welcome line */ }
-        say('Setup saved. Opening the panel…', 'ok');
-        setTimeout(() => window.location.reload(), 800);
+        // Experience Workspace reads the library list when it loads: if this save added the
+        // Content Advisor entry, reload Workspace itself (same page) so the entry is there
+        const reloadWorkspace = !hasLibraryEntry(raw, 'Content Advisor') && workspaceReload(sdk);
+        try {
+          if (doneKey) sessionStorage.setItem(doneKey, JSON.stringify({ env: envName(state.author), library: !!reloadWorkspace || hasLibraryEntry(raw, 'Content Advisor') }));
+        } catch { /* no storage: no welcome line */ }
+        say(reloadWorkspace ? 'Setup saved. Reloading Experience Workspace to add Content Advisor…' : 'Setup saved. Opening the panel…', 'ok');
+        setTimeout(() => (reloadWorkspace ? reloadWorkspace() : window.location.reload()), 800);
       } catch (e) { say(e.message, 'error'); save.disabled = false; save.textContent = saveLabel; }
     };
     show(card(
