@@ -29,6 +29,21 @@ export function findBlock(html, { path, variation }, DOMParserImpl = globalThis.
   return block ? { index: blocks.indexOf(block), block } : null;
 }
 
+const rowTexts = (block) => [...block.children].map((r) => r.textContent.replace(/\s+/g, ' ').trim());
+
+/**
+ * Does the page's block show other text than the fragment rendered from AEM? true / false, or
+ * null when the block is not in the page. Text only, row by row over the template's rows (the
+ * rows Apply replaces): someone edited the page directly, or AEM changed since the last Apply.
+ */
+export function differsFromPage(html, ref, renderedHtml, DOMParserImpl = globalThis.DOMParser) {
+  const found = findBlock(html, ref, DOMParserImpl);
+  const fresh = new DOMParserImpl().parseFromString(renderedHtml, 'text/html').body.firstElementChild;
+  if (!found || !fresh) return null;
+  const page = rowTexts(found.block);
+  return rowTexts(fresh).some((text, i) => text !== (page[i] ?? ''));
+}
+
 /** the stored block with the template's rows in place of its first rows (later rows kept) */
 export function mergeRows(block, renderedHtml, DOMParserImpl = globalThis.DOMParser) {
   const fresh = new DOMParserImpl().parseFromString(renderedHtml, 'text/html').body.firstElementChild;

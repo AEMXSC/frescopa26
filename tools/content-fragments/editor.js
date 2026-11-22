@@ -5,7 +5,7 @@
  * button. Messages for this fragment appear here, next to the buttons, not at the top of the panel.
  */
 import { fieldPatch, editable } from './broker.js';
-import { findBlock, applyToPage } from './apply.js';
+import { findBlock, applyToPage, differsFromPage } from './apply.js';
 import el, { icon } from './ui.js';
 
 const STEPS = [
@@ -72,16 +72,29 @@ export default async function openEditor(ctx, ref, fragment, host, row) {
   let saved = false; // saved to AEM since the last Apply
   const tpl = await ctx.template(fragment).catch(() => null);
   const href = await ctx.editorUrl(fragment.id);
+  // fragment fields carry names only; their labels ("Product name") are in the model
+  const model = fragment.model?.id ? await broker.model(fragment.model.id).catch(() => null) : null;
+  const labels = new Map((model?.fields || []).map((f) => [f.name, f.label]));
 
   const status = el('p', { class: 'row-status', role: 'status', 'aria-live': 'polite' });
   const tell = (msg = '', tone = '') => { status.textContent = msg; status.dataset.tone = tone; };
   const steps = stepList();
   const dirty = () => [...drafts.values()].some((d) => Object.keys(d).length);
-  const render = () => {
-    const d = draft();
+  const renderWith = (d) => {
     const fields = snapshot.data.fields.map((f) => (f.name in d ? { ...f, values: [d[f.name]] } : f));
     return ctx.rendered(tpl, { ...snapshot.data, fields }, { ...ref, variation: current });
   };
+  const render = () => renderWith(draft());
+  /** does the open page show other text than AEM has? (null: no editor document or block) */
+  const differs = () => {
+    const live = ctx.live();
+    if (!tpl || !snapshot || !live?.html) return null;
+    try { return differsFromPage(live.html, { ...ref, variation: current }, renderWith({})); } catch { return null; }
+  };
+  const driftNote = el('p', {
+    class: 'note warn', hidden: true,
+    text: 'This page shows different text than AEM has for this fragment: the page was edited directly, or AEM changed after the last Apply. Apply puts AEM\'s version on the page. To keep the page\'s text instead, type it into the fields and Save to AEM first.',
+  });
 
   let renderTimer;
   const preview = () => {
@@ -117,7 +130,9 @@ export default async function openEditor(ctx, ref, fragment, host, row) {
     row.dirty(dirty());
     save.disabled = !changed;
     discard.hidden = !changed;
-    const applying = saved && !changed && !!tpl;
+    const out = !changed && differs() === true;
+    driftNote.hidden = !out;
+    const applying = (saved || out) && !changed && !!tpl;
     save.className = applying ? 'nx-action-btn' : 'nx-btn-accent';
     apply.hidden = !applying;
     applyHint.hidden = !applying;
@@ -146,7 +161,7 @@ export default async function openEditor(ctx, ref, fragment, host, row) {
     form.replaceChildren();
     snapshot.data.fields.forEach((f) => {
       const id = `${uid}-f-${f.name}`;
-      const label = f.label || f.name;
+      const label = f.label || labels.get(f.name) || f.name;
       if (!editable(f)) {
         const value = Array.isArray(f.values) ? f.values.join(', ') : '';
         readOnly.push(label);
@@ -226,6 +241,7 @@ export default async function openEditor(ctx, ref, fragment, host, row) {
     el('div', { class: 'field' }, el('label', { for: vid, text: 'Variation' }), select),
     form,
     notes,
+    driftNote,
     steps.list,
     el('div', { class: 'actions' }, save, apply, discard, open),
     applyHint,
