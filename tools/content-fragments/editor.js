@@ -12,7 +12,7 @@ const STEPS = [
   ['edit', 'Edit', 'The page preview follows as you type.'],
   ['save', 'Save to AEM', 'Updates the fragment on AEM author, for every page that uses it.'],
   ['apply', 'Apply to this page', 'Writes the new text into this page in the editor.'],
-  ['publish', 'Publish the page', 'From the editor, when you are ready.'],
+  ['publish', 'Publish', 'Puts the fragment on AEM publish and this page on the live site.'],
 ];
 
 let rowSeq = 0;
@@ -91,10 +91,19 @@ export default async function openEditor(ctx, ref, fragment, host, row) {
     if (!tpl || !snapshot || !live?.html) return null;
     try { return differsFromPage(live.html, { ...ref, variation: current }, renderWith({})); } catch { return null; }
   };
-  const driftNote = el('p', {
-    class: 'note warn', hidden: true,
-    text: 'This page shows different text than AEM has for this fragment: the page was edited directly, or AEM changed after the last Apply. Apply puts AEM\'s version on the page. To keep the page\'s text instead, type it into the fields and Save to AEM first.',
+  const keepPage = el('button', {
+    type: 'button', class: 'nx-action-btn', text: 'Save page text to AEM', onclick: () => row.saveFromPage?.(),
   });
+  const driftNote = el(
+    'div',
+    { class: 'note warn', hidden: true },
+    el('p', {
+      text: 'This page shows different text than AEM has for this fragment: the page was edited directly, '
+        + 'or AEM changed after the last Apply. Apply to page puts AEM\'s version on the page; '
+        + 'Save page text to AEM keeps the page\'s.',
+    }),
+    keepPage,
+  );
 
   let renderTimer;
   const preview = () => {
@@ -112,6 +121,9 @@ export default async function openEditor(ctx, ref, fragment, host, row) {
   const apply = el('button', { type: 'button', class: 'nx-btn-accent', text: 'Apply to page' });
   const applyHint = el('p', { class: 'muted apply-hint' });
   const discard = el('button', { type: 'button', class: 'nx-action-btn-quiet', text: 'Discard changes' });
+  const publish = el('button', {
+    type: 'button', class: 'nx-btn-accent', text: 'Publish', hidden: true,
+  });
   const open = el('a', {
     class: 'nx-action-btn', href, target: '_blank', rel: 'noopener noreferrer', 'aria-label': 'Open in AEM (opens in a new tab)',
   }, icon('openin'), 'Open in AEM');
@@ -141,7 +153,11 @@ export default async function openEditor(ctx, ref, fragment, host, row) {
       apply.disabled = sel !== true;
       applyHint.textContent = applyHintFor(sel, current);
     }
-    if (changed) steps.set('save'); else if (applying) steps.set('apply'); else steps.set('edit');
+    if (changed) publish.hidden = true; // new edits: save and apply them before publishing
+    if (changed) steps.set('save');
+    else if (applying) steps.set('apply');
+    else if (!publish.hidden) steps.set('publish');
+    else steps.set('edit');
   };
   ctx.onLive?.(() => { if (host.isConnected) update(); });
 
@@ -198,7 +214,10 @@ export default async function openEditor(ctx, ref, fragment, host, row) {
       saved = true;
       draw();
       row.refresh();
-      tell(tpl ? `Saved to ${variationName(current)} on AEM author. Next: apply it to this page.`
+      row.aemChanged?.();
+      // one click: with the block selected in the editor, the page follows the save straight away
+      if (tpl && selected() === true) { apply.onclick(); return; }
+      tell(tpl ? `Saved to ${variationName(current)} on AEM author. Next: click inside its block in the editor and apply it to this page.`
         : `Saved to ${variationName(current)} on AEM author. This model has no template, so it cannot be applied here.`, 'ok');
     } catch (e) {
       tell(e.message, 'error');
@@ -216,9 +235,25 @@ export default async function openEditor(ctx, ref, fragment, host, row) {
       steps.set('publish');
       apply.hidden = true;
       applyHint.hidden = true;
-      save.className = 'nx-btn-accent';
-      tell('Applied to this page and previewed. Publish the page from the editor to update the live site.', 'ok');
+      save.className = 'nx-action-btn';
+      publish.hidden = false;
+      publish.disabled = false;
+      tell('Applied to this page and previewed. Publish puts the fragment on AEM publish and this page on the live site.', 'ok');
     } catch (e) { tell(e.message, 'error'); apply.disabled = false; }
+  };
+  publish.onclick = async () => {
+    publish.disabled = true;
+    tell('Publishing the fragment in AEM…');
+    try {
+      await broker.publish(fragment.id);
+      row.refresh();
+      tell('Publishing the page…');
+      await ctx.publishPage();
+      publish.hidden = true;
+      save.className = 'nx-btn-accent';
+      steps.set('edit');
+      tell('Published: the fragment on AEM publish, and this page on the live site.', 'ok');
+    } catch (e) { tell(e.message, 'error'); publish.disabled = false; }
   };
   discard.onclick = () => { drafts.delete(current); draw(); preview(); tell('Changes discarded.'); };
 
@@ -243,7 +278,7 @@ export default async function openEditor(ctx, ref, fragment, host, row) {
     notes,
     driftNote,
     steps.list,
-    el('div', { class: 'actions' }, save, apply, discard, open),
+    el('div', { class: 'actions' }, save, apply, publish, discard, open),
     applyHint,
     status,
   );

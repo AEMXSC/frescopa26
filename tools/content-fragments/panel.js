@@ -10,6 +10,7 @@ import { readRefs, readConfig } from './refs.js';
 import createBroker, { statusOf } from './broker.js';
 import { render, fragmentData } from '../../scripts/cf-render.js';
 import openEditor from './editor.js';
+import watchRow from './sync.js';
 import openAdvisor from './advisor.js';
 import runSetup from './setup.js';
 import { imsOrgFor } from './discovery.js';
@@ -57,6 +58,17 @@ async function previewPage() {
     method: 'POST', headers: { Authorization: `Bearer ${sdk.token}`, 'x-content-source-authorization': `Bearer ${sdk.token}` },
   });
   if (!res.ok) throw new Error(`Applied in the editor, but the page preview did not update (HTTP ${res.status}). Use Preview in the editor.`);
+}
+
+/** publish the page (as previewed) to the live site */
+async function publishPage() {
+  const { org: daOrg, repo } = sdk.context;
+  const p = sdk.context.path.replace(/\/index$/, '/');
+  const res = await fetch(`https://admin.hlx.page/live/${daOrg}/${repo}/main${p}`, {
+    method: 'POST', headers: { Authorization: `Bearer ${sdk.token}`, 'x-content-source-authorization': `Bearer ${sdk.token}` },
+  });
+  if (res.status === 401 || res.status === 403) throw new Error('The fragment is published in AEM, but you cannot publish this page. Ask someone with publish rights, or publish it from the editor.');
+  if (!res.ok) throw new Error(`The fragment is published in AEM, but the page did not publish (HTTP ${res.status}). Publish it from the editor.`);
 }
 // BroadcastChannel only connects documents of the same origin (this site's preview): no origin
 // check is needed, and every message is still checked for this page and a /content/dam path
@@ -127,6 +139,19 @@ const services = {
   })),
   editorUrl,
   previewPage,
+  publishPage,
+};
+
+/** a row's page-vs-AEM state → [tone, text] (see sync.js) */
+const DRIFT = {
+  same: () => [],
+  differs: () => ['warn', 'Page differs from AEM'],
+  saving: () => ['neutral', 'Saving the page\'s edits to AEM…'],
+  saved: () => ['ok', 'Page edits saved to AEM'],
+  partial: (names = []) => ['warn', names.length
+    ? `Page differs from AEM: ${names.join(', ')} can't be saved from the page. Edit them in the panel.`
+    : 'Page differs from AEM'],
+  error: (message) => ['error', `Could not save the page's edits: ${message}`],
 };
 
 function row(ref) {
@@ -146,8 +171,44 @@ function row(ref) {
     return f;
   });
   const found = lookup().catch((e) => { setLight('unknown', 'AEM unavailable', e.message); say(e.message, 'error'); return null; });
-  const api = { dirty: (on) => { unsaved.hidden = !on; }, refresh: () => lookup().catch(() => {}) };
   const fail = (e) => body.replaceChildren(el('p', { class: 'error', text: e.message }));
+  // page vs AEM, beside the publication light; text, not only colour
+  const drift = el('span', {
+    class: 'light drift', 'data-tone': 'warn', role: 'status', 'aria-live': 'polite', hidden: true,
+  }, el('i', { 'aria-hidden': 'true' }), el('span'));
+  const showDrift = (state, detail) => {
+    const [tone, text] = DRIFT[state]?.(detail) || [];
+    drift.hidden = !text;
+    if (!text) return;
+    drift.dataset.tone = tone;
+    drift.lastChild.textContent = text;
+  };
+  let watcher = null;
+  let fragmentRef = null;
+  const api = {
+    dirty: (on) => { unsaved.hidden = !on; },
+    refresh: () => lookup().catch(() => {}),
+    saveFromPage: () => watcher?.saveFromPage(),
+    aemChanged: () => watcher?.reload(),
+  };
+  const reopen = () => {
+    // the editor holds AEM's previous content: reload it (it has no unsaved edits, see busy)
+    body.replaceChildren();
+    // eslint-disable-next-line no-use-before-define
+    if (toggle.getAttribute('aria-expanded') === 'true' && fragmentRef) {
+      openEditor(services, ref, fragmentRef, body, api).catch(fail);
+    }
+  };
+  found.then((fragment) => {
+    if (!fragment) return;
+    fragmentRef = fragment;
+    watcher = watchRow(services, ref, fragment, {
+      show: showDrift,
+      busy: () => !unsaved.hidden,
+      saved: () => { api.refresh(); reopen(); },
+    });
+    watcher.start();
+  });
   const toggle = el('button', {
     type: 'button', class: 'name', 'aria-expanded': 'false',
     onclick: async () => {
@@ -162,7 +223,7 @@ function row(ref) {
       openEditor(services, ref, fragment, body, api).catch(fail);
     },
   }, icon('chevrondown'), el('span', { class: 'name-text' }, el('strong', { text: name }), el('span', { class: 'variation', text: ref.variation === 'master' ? 'Main' : ref.variation }), unsaved));
-  return el('li', { class: 'ref' }, toggle, el('div', { class: 'meta' }, light, el('span', { class: 'path', text: ref.path })), body);
+  return el('li', { class: 'ref' }, toggle, el('div', { class: 'meta' }, light, drift, el('span', { class: 'path', text: ref.path })), body);
 }
 
 // the editor's live document, when the host sends one (within ~2 s of subscribing)
