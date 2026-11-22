@@ -12,6 +12,8 @@ import {
   buildBlock,
   readBlockConfig,
   toClassName,
+  decorateBlock,
+  loadBlock,
 } from './aem.js';
 
 if (window.trustedTypes && window.trustedTypes.createPolicy) {
@@ -421,6 +423,13 @@ function loadDelayed() {
   // eslint-disable-next-line import/no-cycle
   window.setTimeout(() => import('./delayed.js'), 3000);
   // load anything that can be postponed to the latest here
+  // Experience Workspace preview only: the Content Fragments panel updates fragment sections live
+  // (Experience Workspace serves the preview from DA's live-preview proxy, *.preview.da.live)
+  if (window.self !== window.top && /\.(aem\.page|(stage-)?preview\.da\.live)$/.test(window.location.hostname)) {
+    import('./cf-bridge.js').then((m) => m.default({
+      decorateButtons, decorateIcons, decorateBlock, loadBlock,
+    }));
+  }
 }
 
 export async function loadPage() {

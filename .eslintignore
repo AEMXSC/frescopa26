@@ -2,3 +2,4 @@ helix-importer-ui
 *.min.js
 stardust/
 blocks/*/vendor/
+tools/content-fragments/
