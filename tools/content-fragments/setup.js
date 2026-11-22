@@ -94,7 +94,7 @@ function previewFrame({ html, css }) {
   // and the site's stylesheets load
   const links = css.map((href) => `<link rel="stylesheet" href="${href}">`).join('');
   const frame = el('iframe', {
-    class: 'preview', sandbox: 'allow-same-origin', title: 'Sample rendering', srcdoc: `${links}<style>html{color-scheme:light}body{margin:12px}img{max-width:100%;height:auto}</style>${html}`,
+    class: 'preview', sandbox: 'allow-same-origin', title: 'Sample rendering', srcdoc: `${links}<style>html{color-scheme:light}body{margin:12px}img{max-width:100%;height:auto}</style><body class="appear">${html}</body>`,
   });
   frame.addEventListener('load', () => {
     const doc = frame.contentDocument;
