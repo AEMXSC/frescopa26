@@ -61,6 +61,7 @@ export default function folderBrowser({
     });
     const summary = fine(atRoot ? 'Open the folder that holds this site\'s fragments.' : 'Looking at this folder…');
     const list = el('div', {}, fine('Loading folders…'));
+    // el() drops null children, so the optional badge is safe inside it
     host.replaceChildren(crumbs, el('div', { class: 'actions' }, use, path === saved ? el('span', { class: 'badge', text: 'Current' }) : null), summary, list);
     crumbs.querySelector('[aria-current]')?.setAttribute('tabindex', '-1');
     crumbs.querySelector('[aria-current]')?.focus();
@@ -88,7 +89,20 @@ export default function folderBrowser({
           icon('chevrondown'),
         ));
       });
-      list.replaceChildren(el('p', { class: 'muted', text: 'Subfolders' }), el('ul', { class: 'picks' }, rows));
+      const ul = el('ul', { class: 'picks' }, rows);
+      // long folder lists get a filter (an AEM environment can have dozens at the top)
+      const filter = rows.length > 6 ? el('input', {
+        id: 'folder-filter', class: 'nx-input', type: 'search', placeholder: 'Filter folders', oninput: (e) => {
+          const q = e.target.value.trim().toLowerCase();
+          rows.forEach((li) => { li.hidden = !!q && !li.textContent.toLowerCase().includes(q); });
+        },
+      }) : null;
+      list.replaceChildren(...[
+        el('p', { class: 'muted', text: `Subfolders (${rows.length})` }),
+        filter ? el('label', { for: 'folder-filter', class: 'sr-only', text: 'Filter folders' }) : null,
+        filter,
+        ul,
+      ].filter(Boolean));
     } catch (e) {
       if (mine === seq) list.replaceChildren(fine(`Folders could not be listed (${e.message}). Type the folder path below.`));
     }
