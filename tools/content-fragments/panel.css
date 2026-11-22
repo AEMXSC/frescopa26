@@ -592,6 +592,53 @@ main textarea.nx-input {
   gap: 6px;
 }
 
+/* folder browser: breadcrumb trail, then the folder's actions, contents and subfolders */
+.folders {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2-spacing-100, 8px);
+}
+
+.crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s2-spacing-75, 4px);
+  font-size: var(--s2-body-size-xs, 12px);
+  overflow-wrap: anywhere;
+}
+
+.crumbs > * + *::before {
+  content: '/';
+  margin-right: var(--s2-spacing-75, 4px);
+  color: var(--s2-gray-600, #717171);
+}
+
+.crumb {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--s2-blue-1000, #274dea);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.crumb:focus-visible {
+  outline: 2px solid var(--s2-blue-800, #4b75ff);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.crumbs [aria-current] {
+  font-weight: 700;
+}
+
+.crumbs [aria-current]:focus {
+  outline: none;
+}
+
 /* focus moves to the heading on each step for screen readers; it is not a control */
 .step h2:focus {
   outline: none;

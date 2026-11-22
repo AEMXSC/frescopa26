@@ -35,6 +35,24 @@ export default function createBroker({ url, author, getToken }) {
     author,
     byPath: async (path) => (await call('list', { path, limit: 1 })).data?.items?.find((f) => f.path === path) || null,
     list: async (path, limit = 50) => (await call('list', { path, limit })).data?.items || [],
+    /**
+     * Every fragment under `path` (subfolders included) as summaries, up to `pages` × 50:
+     * { items, more } where `more` means the folder holds more than was read
+     */
+    scan: async (path, pages = 20) => {
+      const items = [];
+      let cursor;
+      for (let i = 0; i < pages; i += 1) {
+        // each page needs the previous cursor
+        const { data } = await call('list', {
+          path, limit: 50, cursor, projection: 'summary',
+        });
+        items.push(...(data?.items || []));
+        cursor = data?.cursor;
+        if (!cursor) break;
+      }
+      return { items, more: !!cursor };
+    },
     /** DAM folders directly under `path` ([{ path, title }]), up to `pages` × 50 */
     folders: async (path = '/content/dam', pages = 6) => {
       const out = [];
