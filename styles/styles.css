@@ -316,6 +316,11 @@ main > .section:first-of-type {
   margin-top: 0;
 }
 
+/* a page that opens with text, not a block: the section padding already spaces the top */
+main > .section:first-of-type > .default-content-wrapper > :is(h1, h2, h3, h4, h5, h6):first-child {
+  margin-top: 0;
+}
+
 /* section metadata / background variants.
    The source alternates section bands: intro/mood/sustain use the base paper
    tone (same as body), learn/feed/voices use the slightly darker paper-2. */
