@@ -70,6 +70,7 @@ export default async function openEditor(ctx, ref, fragment, host, row) {
   const drafts = new Map(); // unsaved edits per variation, kept when switching
   const draft = () => drafts.get(current) || {};
   let saved = false; // saved to AEM since the last Apply
+  let applied = false; // applied to the page since the last Publish
   const tpl = await ctx.template(fragment).catch(() => null);
   const href = await ctx.editorUrl(fragment.id);
   // fragment fields carry names only; their labels ("Product name") are in the model
@@ -153,10 +154,13 @@ export default async function openEditor(ctx, ref, fragment, host, row) {
       apply.disabled = sel !== true;
       applyHint.textContent = applyHintFor(sel, current);
     }
-    if (changed) publish.hidden = true; // new edits: save and apply them before publishing
+    // Publish once the page shows what AEM has: right after an Apply, or whenever AEM has
+    // unpublished changes the page already shows (e.g. page edits saved to AEM)
+    const publishing = !changed && !applying && (applied || !!row.publishable?.());
+    publish.hidden = !publishing;
     if (changed) steps.set('save');
     else if (applying) steps.set('apply');
-    else if (!publish.hidden) steps.set('publish');
+    else if (publishing) steps.set('publish');
     else steps.set('edit');
   };
   ctx.onLive?.(() => { if (host.isConnected) update(); });
@@ -232,28 +236,22 @@ export default async function openEditor(ctx, ref, fragment, host, row) {
         actions: ctx.sdk.actions, live: ctx.live(), ref: { ...ref, variation: current }, renderedHtml: render(), preview: ctx.previewPage,
       });
       saved = false;
-      steps.set('publish');
-      apply.hidden = true;
-      applyHint.hidden = true;
+      applied = true;
       save.className = 'nx-action-btn';
-      publish.hidden = false;
-      publish.disabled = false;
+      update();
       tell('Applied to this page and previewed. Publish puts the fragment on AEM publish and this page on the live site.', 'ok');
     } catch (e) { tell(e.message, 'error'); apply.disabled = false; }
   };
   publish.onclick = async () => {
     publish.disabled = true;
-    tell('Publishing the fragment in AEM…');
+    tell('Publishing the fragment in AEM, then this page…');
     try {
-      await broker.publish(fragment.id);
-      row.refresh();
-      tell('Publishing the page…');
-      await ctx.publishPage();
-      publish.hidden = true;
+      await row.publish();
+      applied = false;
       save.className = 'nx-btn-accent';
-      steps.set('edit');
+      update();
       tell('Published: the fragment on AEM publish, and this page on the live site.', 'ok');
-    } catch (e) { tell(e.message, 'error'); publish.disabled = false; }
+    } catch (e) { tell(e.message, 'error'); } finally { publish.disabled = false; }
   };
   discard.onclick = () => { drafts.delete(current); draw(); preview(); tell('Changes discarded.'); };
 

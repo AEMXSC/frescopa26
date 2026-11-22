@@ -318,6 +318,12 @@ main h3 {
   padding: 0 8px 6px 34px;
 }
 
+/* the row's Publish: its own size, under the path */
+.meta > button {
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
 .path {
   font-size: var(--s2-body-size-xs, 12px);
   color: var(--s2-gray-700, #505050);
