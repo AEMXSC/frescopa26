@@ -72,6 +72,12 @@ export default function createBroker({ url, author, getToken }) {
     patch: (id, variation, etag, ops) => call('patch', {
       id, variation, etag, ops,
     }),
+    /** publish the fragment (all its variations) to AEM publish */
+    publish: async (id) => {
+      const items = (await call('publish', { id })).data?.items || [];
+      const failed = items.find((i) => i.status && i.status !== 'SUCCESS_TRIGGERED');
+      if (failed) throw new Error(`AEM did not publish the fragment (${String(failed.status).toLowerCase().replace(/_/g, ' ')}).`);
+    },
   };
 }
 

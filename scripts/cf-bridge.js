@@ -171,9 +171,30 @@ async function swap(section, html, hooks, path, variation) {
   flash(section);
 }
 
+// in the editor's preview only: mark sections whose text comes from AEM, so authors edit them in
+// the panel. Pure CSS (an outline and a ::before label): nothing is added to the page's DOM, so
+// nothing can be saved into the document
+const LABEL_CSS = `
+main > .section[data-fragment] { position: relative; outline: 2px dashed #3b63fb; outline-offset: 4px; }
+main > .section[data-fragment]::before {
+  content: 'From AEM \\00B7  edit in the Content Fragments panel';
+  position: absolute; top: 0; left: 0; z-index: 2; transform: translateY(-100%);
+  padding: 2px 8px; border-radius: 4px 4px 0 0;
+  background: #3b63fb; color: #fff; font: 600 12px/1.5 system-ui, sans-serif;
+}`;
+
+function labelSections() {
+  if (document.getElementById('cf-bridge-labels')) return;
+  const style = document.createElement('style');
+  style.id = 'cf-bridge-labels';
+  style.textContent = LABEL_CSS;
+  document.head.append(style);
+}
+
 export default function startBridge(hooks = {}) {
   if (!hooks.decorateBlock || !hooks.loadBlock) throw new Error('cf-bridge needs decorateBlock and loadBlock.');
   if (window.self === window.top || typeof BroadcastChannel === 'undefined') return;
+  labelSections();
   const channel = new BroadcastChannel(CHANNEL);
   const reply = (msg) => channel.postMessage({ page: page(), ...msg });
   channel.addEventListener('message', async ({ origin, data }) => {
