@@ -48,8 +48,18 @@ export function blockTable(blockHtml, DOMParserImpl = globalThis.DOMParser) {
   const rows = [...block.children];
   const cols = Math.max(1, ...rows.map((r) => cellsOf(r).length));
   const head = variants.length ? `${name} (${variants.join(', ')})` : name;
-  const cell = (c) => `<td>${c.innerHTML}</td>`;
-  const body = rows.map((r) => `<tr>${cellsOf(r).map(cell).join('')}</tr>`).join('');
+  // the editor squares tables off: a row with fewer cells would get empty padding cells, so its last
+  // cell spans the rest (a merged cell is one cell on the page)
+  const row = (r) => {
+    const cells = cellsOf(r);
+    const span = cols - cells.length + 1;
+    const td = (c, i) => {
+      const attr = i === cells.length - 1 && span > 1 ? ` colspan="${span}"` : '';
+      return `<td${attr}>${c.innerHTML}</td>`;
+    };
+    return `<tr>${cells.map(td).join('')}</tr>`;
+  };
+  const body = rows.map(row).join('');
   return `<table><tr><td colspan="${cols}">${head}</td></tr>${body}</table>`;
 }
 
