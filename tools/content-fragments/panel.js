@@ -203,7 +203,9 @@ async function renderRef({ path, variation }) {
 function welcome() {
   let env;
   try { env = sessionStorage.getItem(SETUP_DONE); sessionStorage.removeItem(SETUP_DONE); } catch { env = null; }
-  if (env) say(`Connected to ${env}. Edit the fragments on this page below, or place new ones with Content Advisor.`, 'ok');
+  // Experience Workspace reads the library list when it loads, so the Content Advisor entry setup
+  // just added appears (and "Browse with Content Advisor" works) after one reload of the page
+  if (env) say(`Connected to ${env}. Edit the fragments on this page below. Reload Experience Workspace once to add Content Advisor to the library, for placing new fragments.`, 'ok');
 }
 
 async function init() {
