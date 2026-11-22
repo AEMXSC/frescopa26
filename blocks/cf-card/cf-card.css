@@ -1,0 +1,35 @@
+.cf-card > div {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+  border: 1px solid var(--light-color, #e1e1e1);
+  border-radius: 8px;
+  background: var(--background-color, #fff);
+}
+
+.cf-card .cf-card-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.cf-card .cf-card-text > :first-child {
+  margin-top: 0;
+}
+
+.cf-card .cf-card-text > :last-child {
+  margin-bottom: 0;
+}
+
+.cf-card .cf-card-text p {
+  margin: 0.5rem 0;
+}
+
+@media (width >= 900px) {
+  .cf-card > div:has(> .cf-card-image) {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    align-items: center;
+  }
+}
