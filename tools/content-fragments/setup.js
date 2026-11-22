@@ -7,6 +7,7 @@
  */
 import el, { icon } from './ui.js';
 import { listAuthors } from './discovery.js';
+import folderBrowser from './folders.js';
 import { starterTemplate } from './starter.js';
 import { render, fragmentData } from '../../scripts/cf-render.js';
 
@@ -90,7 +91,7 @@ function previewFrame({ html, css }) {
   return frame;
 }
 
-function modelCard(model, sample, existing, broker, base, site) {
+function modelCard(model, sample, existing, broker, base, site, count = 0) {
   const keepFile = !!existing?.template && !existing?.html;
   const name = model.title || model.name;
   const use = el('input', { type: 'checkbox', checked: !keepFile });
@@ -115,11 +116,12 @@ function modelCard(model, sample, existing, broker, base, site) {
   area.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(draw, 400); });
   draw();
   const fields = (model.fields || []).map((f) => f.label || f.name).join(', ');
+  const detail = fields ? `Fields: ${fields}` : model.path;
   const card = el(
     'li',
     { class: 'model card' },
     el('strong', { text: name }),
-    el('p', { class: 'path', text: fields ? `Fields: ${fields}` : model.path }),
+    el('p', { class: 'path', text: `${count} fragment${count === 1 ? '' : 's'} · ${detail}` }),
     keepFile ? el('p', { class: 'muted', text: `Uses the template file ${existing.template}. Tick "Use this template" to replace it.` }) : null,
     site && !existing?.html ? el('p', { class: 'muted', text: `This site's template for the model (${site.file}).` }) : null,
     out,
@@ -236,16 +238,28 @@ export default async function runSetup({
   steps.models = async () => {
     say(`Reading ${state.folder}…`);
     const b = broker();
-    const items = await b.list(state.folder, 50);
-    const byModel = new Map();
-    items.forEach((f) => { if (f.model?.id && !byModel.has(f.model.id)) byModel.set(f.model.id, f); });
+    // every fragment in the folder and its subfolders, so no model is missed
+    const { items, more } = await b.scan(state.folder);
+    const byModel = new Map(); // model id → { sample, count }
+    items.forEach((f) => {
+      if (!f.model?.id) return;
+      const seen = byModel.get(f.model.id);
+      if (seen) seen.count += 1; else byModel.set(f.model.id, { sample: f, count: 1 });
+    });
     if (!byModel.size) throw new Error(`No Content Fragments in ${state.folder}. Pick another folder.`);
     const base = { linkBase: state.linkBase.replace(/\/$/, ''), assetBase: `https://${state.author.replace(/^author-/, 'publish-')}` };
-    const models = await Promise.all([...byModel.keys()].map((id) => b.model(id)));
-    const sites = await Promise.all(models.map(siteTemplate));
-    const samples = [...byModel.values()];
+    const found = await Promise.all([...byModel].map(async ([id, { sample, count }]) => {
+      const model = await b.model(id);
+      return {
+        model, sample, count, site: await siteTemplate(model),
+      };
+    }));
+    // models with a site template first, then by how many fragments use them
+    found.sort((x, y) => (!!y.site - !!x.site) || (y.count - x.count));
     const existing = (m) => config.models.find((x) => x.model === m.path || x.model === m.id);
-    const cards = models.map((m, i) => modelCard(m, samples[i], existing(m), b, base, sites[i]));
+    const cards = found.map((f) => modelCard(f.model, f.sample, existing(f.model), b, base, f.site, f.count));
+    const models = found.map((f) => f.model);
+    const scanned = more ? ` (the first ${items.length} fragments were read)` : '';
     say('');
     const save = el('button', { type: 'button', class: 'nx-btn-accent wide', text: saveLabel });
     save.onclick = async () => {
@@ -266,7 +280,7 @@ export default async function runSetup({
       el('h2', { text: 'Review the templates' }),
       progress(3),
       switching(),
-      el('p', { text: `${models.length} model${models.length > 1 ? 's' : ''} in ${state.folder}. ${INTRO_TEMPLATES}` }),
+      el('p', { text: `${models.length} model${models.length > 1 ? 's' : ''} in ${state.folder}${scanned}. ${INTRO_TEMPLATES}` }),
       el('ul', { class: 'models' }, cards.map((c) => c.card)),
       el('h3', { text: mode === 'edit' ? 'You are about to change' : `You are about to connect ${context.repo}` }),
       changes(cards.length),
@@ -310,36 +324,20 @@ export default async function runSetup({
       ...field('setup-link-base', 'Link base (optional)', 'The site that root-relative links in fragments point to, e.g. https://www.example.com.', 'linkBase', 'https://www.example.com'),
       ...field('setup-broker', 'Broker URL', 'The App Builder action this panel uses to reach AEM.', 'broker'),
     );
-    const list = el('div', {}, fine('Loading folders…'));
+    // the saved folder opens first (same environment), else the top of the DAM
+    const saved = state.author === s.author ? s['advisor-folder'] : '';
     show(card(
       back(() => steps.author()),
       el('h2', { text: 'Choose the fragment folder' }),
       progress(2, 'review the templates'),
       switching(),
-      el('p', { text: `Where this site's Content Fragments live in ${envName(state.author)}. Models are found there, and Content Advisor opens there.` }),
-      list,
+      el('p', { text: `Where this site's Content Fragments live in ${envName(state.author)}. Open folders to find it; fragments in subfolders count too. Models are found there, and Content Advisor opens there.` }),
+      folderBrowser({
+        broker: broker(), start: state.folder || saved || '/content/dam', site: context.repo, saved, onUse: choose,
+      }),
       manual,
       more,
     ));
-    try {
-      const folders = await broker().folders('/content/dam');
-      if (!folders.length) throw new Error('none found');
-      const suggested = `/content/dam/${context.repo}`.toLowerCase();
-      // the saved folder first, then the one named like the site, then the rest
-      const isSuggested = (f) => f.path.toLowerCase() === suggested;
-      const rank = (f) => [f.path === s['advisor-folder'], isSuggested(f), true].indexOf(true);
-      const items = [...folders].sort((a, c) => rank(a) - rank(c)).map((f) => ({ ...f, text: `${f.title} ${f.path}` }));
-      const toRow = (f) => {
-        const saved = f.path === s['advisor-folder'] && state.author === s.author;
-        return pickRow({
-          name: f.title, meta: f.path, current: saved, badge: first([[saved, 'Current'], [isSuggested(f), 'Suggested']]), onPick: () => choose(f.path),
-        });
-      };
-      list.replaceChildren(...pickList(items, toRow, 'Filter folders'), fine('Fragments in subfolders are found too. To use a subfolder only, type its path.'));
-    } catch (e) {
-      list.replaceChildren(fine(`Folders could not be listed (${e.message}). Type the folder path.`));
-      manual.open = true;
-    }
   };
 
   // 1. connect AEM: pick the author environment
